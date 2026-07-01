@@ -1,0 +1,218 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.searchWrap {
+  position: relative;
+  flex: 1 1 160px;
+  min-width: 0;
+  max-width: 320px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--space-md);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md) var(--space-sm) 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.filterBtn {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.filterActive {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 0;
+}
+
+.colTitle {
+  width: 24%;
+}
+
+.colPreview {
+  width: 26%;
+}
+
+.colStatus {
+  width: 12%;
+}
+
+.colDate {
+  width: 18%;
+}
+
+.colBanner {
+  width: 12%;
+}
+
+.colManage {
+  width: 8%;
+}
+
+.table th,
+.table td {
+  overflow: hidden;
+}
+
+.headerText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clipText {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.titleBtn {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titleBtn:hover {
+  color: var(--color-primary);
+}
+
+.preview {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dateText {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+}
+
+.hiddenRow .preview,
+.hiddenRow .titleBtn {
+  color: var(--color-text-muted);
+}
+
+.statusBadge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
+}
+
+.status_published {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status_scheduled {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.status_hidden {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.bannerBadge {
+  display: inline-block;
+  padding: 2px var(--space-sm);
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.muted {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.empty {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  padding: var(--space-lg) 0;
+}
+
+@media (max-width: 768px) {
+  .previewCol,
+  .colPreview {
+    display: none;
+  }
+
+  .colTitle {
+    width: 34%;
+  }
+
+  .colStatus {
+    width: 14%;
+  }
+
+  .colDate {
+    width: 22%;
+  }
+
+  .colBanner {
+    width: 14%;
+  }
+
+  .colManage {
+    width: 16%;
+  }
+}

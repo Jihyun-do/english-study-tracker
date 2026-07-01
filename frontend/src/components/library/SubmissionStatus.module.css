@@ -1,0 +1,62 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.summaryRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.summary {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.summary strong {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.rate {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.avatarGroup {
+  display: flex;
+  align-items: center;
+  padding-left: 2px;
+}
+
+.avatarGroup > * + * {
+  margin-left: -8px;
+}
+
+.overflow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: -8px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-soft);
+  border: 2px solid var(--color-surface);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}

@@ -1,0 +1,20 @@
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.link:active {
+  background: var(--color-primary-soft);
+  transform: scale(0.98);
+}

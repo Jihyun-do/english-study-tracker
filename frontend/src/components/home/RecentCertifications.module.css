@@ -1,0 +1,97 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-xs);
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.nav {
+  display: flex;
+  gap: 4px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navBtn:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.navBtn:active {
+  transform: scale(0.94);
+}
+
+.carouselViewport {
+  width: 100%;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.scrollWrap {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: min(72cqi, 280px);
+  gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: var(--space-xs) 0 var(--space-sm);
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  cursor: grab;
+  user-select: none;
+}
+
+.scrollWrap.isDragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+}
+
+.scrollWrap::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollWrap > * {
+  scroll-snap-align: center;
+}
+
+.scrollWrap > *:first-child {
+  scroll-snap-align: start;
+}
+
+.scrollWrap > *:last-child {
+  scroll-snap-align: end;
+}
+
+.hint {
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding-top: 2px;
+}

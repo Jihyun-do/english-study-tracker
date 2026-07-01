@@ -1,0 +1,95 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px var(--space-sm);
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badgeIcon {
+  flex-shrink: 0;
+}
+
+.pending {
+  background: #fff7ed;
+  color: #d4620f;
+}
+
+.pendingIcon {
+  color: #e8884a;
+  flex-shrink: 0;
+}
+
+.completed {
+  background: var(--color-success-bg);
+  color: #1a8a42;
+}
+
+.newCommentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #e85555;
+  white-space: nowrap;
+}
+
+.newCommentDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: #e85555;
+  flex-shrink: 0;
+}
+
+.time {
+  font-size: 0.66rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  padding-left: 2px;
+}
+
+.table {
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.table .badgeRow {
+  flex-wrap: wrap;
+}
+
+.table .badge {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+}
+
+.table .newCommentBadge {
+  font-size: 0.66rem;
+}
+
+.table .time {
+  font-size: 0.64rem;
+  line-height: 1.3;
+}
+
+.default .badge {
+  font-size: 0.75rem;
+}

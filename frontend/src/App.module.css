@@ -1,0 +1,13 @@
+.overlay {
+  position: fixed;
+  top: var(--header-height);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--max-width);
+  bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
+  background: var(--color-bg);
+  overflow-y: auto;
+  padding: var(--space-md);
+  z-index: 30;
+}

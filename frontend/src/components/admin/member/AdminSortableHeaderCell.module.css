@@ -1,0 +1,32 @@
+.headerCell {
+  padding: var(--space-sm) 4px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  transition: color 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.sortBtn:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.sortBtnActive {
+  color: var(--color-primary);
+}
+
+.sortIcon {
+  flex-shrink: 0;
+}

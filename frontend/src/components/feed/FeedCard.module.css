@@ -1,0 +1,80 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+
+.meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.date {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.memo {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  word-break: keep-all;
+}
+
+.audioWrap {
+  margin-top: calc(var(--space-sm) * -1);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  padding-top: var(--space-xs);
+  border-top: 1px solid var(--color-border);
+}
+
+.likeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-sm) var(--space-md);
+  margin-left: calc(var(--space-md) * -1);
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.likeBtn:active {
+  background: var(--color-primary-soft);
+}
+
+.liked {
+  color: #ef4444;
+}

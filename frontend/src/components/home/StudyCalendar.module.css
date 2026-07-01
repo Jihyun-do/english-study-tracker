@@ -1,0 +1,143 @@
+.calendar {
+  margin-bottom: var(--space-md);
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-sm);
+  padding-left: var(--space-lg);
+  padding-right: var(--space-lg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  transition: background 0.15s ease;
+}
+
+.navBtn:active {
+  background: var(--color-primary-soft);
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: var(--space-sm);
+}
+
+.weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  padding: var(--space-xs) 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+}
+
+.day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: default;
+}
+
+button.day {
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+button.day:active {
+  transform: scale(0.92);
+}
+
+.default {
+  color: var(--color-text-secondary);
+}
+
+.completed {
+  background: var(--color-success);
+  color: white;
+  font-weight: 600;
+}
+
+.today {
+  background: var(--color-primary);
+  color: white;
+  font-weight: 700;
+}
+
+.selected {
+  box-shadow: 0 0 0 2px var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.completed.selected {
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary);
+}
+
+.legend {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-xs);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.completedDot {
+  background: var(--color-success);
+}
+
+.todayDot {
+  background: var(--color-primary);
+}

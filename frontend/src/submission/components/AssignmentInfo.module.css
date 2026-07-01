@@ -1,0 +1,25 @@
+.badge {
+  display: inline-block;
+  padding: 4px var(--space-md);
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.4;
+  margin-top: var(--space-md);
+}
+
+.description {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+  margin-top: var(--space-sm);
+  word-break: keep-all;
+}

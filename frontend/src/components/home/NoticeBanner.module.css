@@ -1,0 +1,29 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.banner:active {
+  background: var(--color-primary-light);
+}
+
+.text {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}

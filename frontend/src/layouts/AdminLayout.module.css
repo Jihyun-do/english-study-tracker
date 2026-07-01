@@ -1,0 +1,142 @@
+.layout {
+  display: flex;
+  min-height: 100dvh;
+  background: var(--color-bg);
+}
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: var(--space-lg) var(--space-md);
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.brandTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.brandSub {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.navItem:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.navItemActive {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.sidebarFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.footerBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.footerBtn:active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.mainArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.main {
+  padding: var(--space-lg);
+  max-width: 1200px;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 72px;
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .brand > div,
+  .navItem span,
+  .footerBtn span {
+    display: none;
+  }
+
+  .brand {
+    justify-content: center;
+  }
+
+  .navItem,
+  .footerBtn {
+    justify-content: center;
+    padding: var(--space-sm);
+  }
+
+  .main {
+    padding: var(--space-md);
+  }
+}

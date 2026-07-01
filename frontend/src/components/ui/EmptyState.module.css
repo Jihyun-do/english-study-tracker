@@ -1,0 +1,25 @@
+.empty {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.plain {
+  padding: 0;
+}
+
+.boxed {
+  padding: var(--space-lg);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+.inline {
+  padding: var(--space-lg) 0;
+}
+
+.fill {
+  flex: 1;
+}

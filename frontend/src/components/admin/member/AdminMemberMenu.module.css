@@ -1,0 +1,27 @@
+.menuDropdown {
+  min-width: max-content;
+}
+
+.pickItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  white-space: nowrap;
+}
+
+.pickItemActive {
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.separator {
+  height: 1px;
+  margin: 4px var(--space-sm);
+  background: var(--color-border);
+}

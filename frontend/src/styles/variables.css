@@ -1,0 +1,55 @@
+:root {
+  /* Pastel purple palette */
+  --color-primary: #8b7fd4;
+  --color-primary-dark: #7568c4;
+  --color-primary-light: #ede9fe;
+  --color-primary-soft: #f3f0ff;
+
+  /* Audio player — slightly softer than primary */
+  --color-audio-control: #9a93d6;
+  --color-audio-control-active: #8b7fd4;
+  --color-audio-progress: #a39cd9;
+
+  /* Semantic colors */
+  --color-streak: #ff9500;
+  --color-streak-bg: #fff4e6;
+  --color-success: #22c55e;
+  --color-success-bg: #dcfce7;
+  --color-danger: #ef4444;
+  --color-danger-bg: #fee2e2;
+
+  /* Neutrals */
+  --color-bg: #f5f4fa;
+  --color-surface: #ffffff;
+  --color-text: #1f1f2e;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-border: #e8e6f0;
+
+  /* Typography */
+  --font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+
+  /* Layout */
+  --max-width: 480px;
+  --header-height: 56px;
+  --bottom-nav-height: 72px;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Shape */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* Shadow */
+  --shadow-card: 0 4px 20px rgba(139, 127, 212, 0.08);
+  --shadow-nav: 0 -2px 16px rgba(0, 0, 0, 0.06);
+}

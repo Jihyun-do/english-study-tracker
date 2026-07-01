@@ -1,0 +1,27 @@
+.tabs {
+  display: flex;
+  gap: var(--space-sm);
+  padding: 4px;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-card);
+}
+
+.tab {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tab.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+.tab:not(.active):active {
+  background: var(--color-primary-soft);
+}
