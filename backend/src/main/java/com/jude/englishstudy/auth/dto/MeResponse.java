@@ -4,29 +4,21 @@ import com.jude.englishstudy.domain.entity.StudyMember;
 import com.jude.englishstudy.domain.entity.User;
 
 /**
- * Google 로그인 성공 응답.
+ * GET /api/auth/me 응답.
  */
-public record LoginResponse(
+public record MeResponse(
         AuthStatus status,
-        String accessToken,
-        String refreshToken,
         Long userId,
         String email,
         String nickname,
-        String profileImageUrl,
+        String profileImage,
         Long studyId,
         String role
 ) {
 
-    public static LoginResponse registered(
-            User user,
-            StudyMember studyMember,
-            String accessToken,
-            String refreshToken) {
-        return new LoginResponse(
+    public static MeResponse registered(User user, StudyMember studyMember) {
+        return new MeResponse(
                 AuthStatus.REGISTERED,
-                accessToken,
-                refreshToken,
                 user.getId(),
                 user.getEmail(),
                 user.getNickname(),
@@ -36,14 +28,9 @@ public record LoginResponse(
         );
     }
 
-    public static LoginResponse onboarding(
-            User user,
-            String accessToken,
-            String refreshToken) {
-        return new LoginResponse(
+    public static MeResponse onboarding(User user) {
+        return new MeResponse(
                 AuthStatus.ONBOARDING,
-                accessToken,
-                refreshToken,
                 user.getId(),
                 user.getEmail(),
                 user.getNickname(),

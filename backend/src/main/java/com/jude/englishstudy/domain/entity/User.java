@@ -72,4 +72,8 @@ public class User extends BaseTimeEntity {
         this.profileImageUrl = profileImageUrl;
         this.lastLoginAt = lastLoginAt;
     }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
 }

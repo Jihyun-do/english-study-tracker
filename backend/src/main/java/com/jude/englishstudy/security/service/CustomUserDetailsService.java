@@ -34,10 +34,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userId));
 
-        StudyMember studyMember = studyMemberRepository.findByUserId(userId)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "Study member not found for user: " + userId));
-
-        return CustomUserPrincipal.from(user, studyMember);
+        return studyMemberRepository.findByUserId(userId)
+                .filter(studyMember -> "ACTIVE".equals(studyMember.getStatus()))
+                .<UserDetails>map(studyMember -> CustomUserPrincipal.from(user, studyMember))
+                .orElseGet(() -> CustomUserPrincipal.fromOnboarding(user));
     }
 }

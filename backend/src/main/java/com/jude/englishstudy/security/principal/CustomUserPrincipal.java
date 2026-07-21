@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,8 +39,25 @@ public class CustomUserPrincipal implements UserDetails {
         );
     }
 
+    public static CustomUserPrincipal fromOnboarding(User user) {
+        return new CustomUserPrincipal(
+                user.getId(),
+                user.getEmail(),
+                user.getNickname(),
+                null
+        );
+    }
+
+    public boolean isOnboarding() {
+        return role == null;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (role == null) {
+            return Collections.emptyList();
+        }
+
         return List.of(new SimpleGrantedAuthority("ROLE_" + role));
     }
 

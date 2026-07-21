@@ -2,13 +2,17 @@ import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth, getPostLoginPath } from '../auth/AuthContext'
 
 export function GuestGuard() {
-  const { isAuthenticated, user, googleSession } = useAuth()
+  const { isAuthenticated, user, needsOnboarding, isAuthReady } = useAuth()
+
+  if (!isAuthReady) {
+    return null
+  }
 
   if (isAuthenticated && user) {
     return <Navigate to={getPostLoginPath(user.role)} replace />
   }
 
-  if (googleSession) {
+  if (needsOnboarding) {
     return <Navigate to="/onboarding/invite-code" replace />
   }
 
@@ -16,13 +20,17 @@ export function GuestGuard() {
 }
 
 export function OnboardingGuard() {
-  const { isAuthenticated, user, googleSession } = useAuth()
+  const { isAuthenticated, user, needsOnboarding, isAuthReady } = useAuth()
+
+  if (!isAuthReady) {
+    return null
+  }
 
   if (isAuthenticated && user) {
     return <Navigate to={getPostLoginPath(user.role)} replace />
   }
 
-  if (!googleSession) {
+  if (!needsOnboarding) {
     return <Navigate to="/login" replace />
   }
 
@@ -30,7 +38,11 @@ export function OnboardingGuard() {
 }
 
 export function AuthGuard() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isAuthReady } = useAuth()
+
+  if (!isAuthReady) {
+    return null
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
@@ -40,7 +52,11 @@ export function AuthGuard() {
 }
 
 export function AdminGuard() {
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, user, isAuthReady } = useAuth()
+
+  if (!isAuthReady) {
+    return null
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />

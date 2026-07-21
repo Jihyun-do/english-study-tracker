@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * Google OAuth2 로그인 성공 시 AuthService로 JWT를 발급하고 JSON 응답을 반환한다.
+ * Google OAuth2 로그인 성공 시 AuthService로 JWT를 발급하고 프론트엔드로 Redirect한다.
  */
 @Component
 @RequiredArgsConstructor
@@ -41,9 +41,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
                     deviceInfo.deviceName()
             );
             LoginResponse loginResponse = authService.login(userInfo);
-            oAuth2LoginResponseWriter.writeSuccess(response, loginResponse);
+            oAuth2LoginResponseWriter.redirectSuccess(response, loginResponse);
         } catch (BusinessException exception) {
-            oAuth2LoginResponseWriter.writeError(
+            oAuth2LoginResponseWriter.redirectError(
                     response,
                     exception.getErrorCode(),
                     exception.getMessage()

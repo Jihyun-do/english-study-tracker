@@ -38,13 +38,10 @@ jwt:
   access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:1h}
   refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:14d}
 
-logging:
-  level:
-    root: warn
-    com.jude.englishstudy: info
-    org.hibernate.SQL: warn
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
 
-server:
+logging:
   error:
     include-message: never
     include-stacktrace: never

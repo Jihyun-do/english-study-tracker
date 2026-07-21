@@ -1,9 +1,14 @@
 export type UserRole = 'ROLE_USER' | 'ROLE_ADMIN'
 
+export type AuthStatus = 'REGISTERED' | 'ONBOARDING'
+
 export interface AuthUser {
   id: string
   name: string
   role: UserRole
+  email?: string
+  profileImage?: string | null
+  studyId?: number
 }
 
 export interface GoogleSession {
@@ -11,33 +16,19 @@ export interface GoogleSession {
   displayName: string
 }
 
-export interface StoredAuth {
-  user: AuthUser
+export interface MeResponse {
+  status: AuthStatus
+  userId: number
+  email: string
+  nickname: string
+  profileImage: string | null
+  studyId: number | null
+  role: string | null
 }
 
-export type GoogleLoginResult =
-  | { type: 'returning'; user: AuthUser }
-  | { type: 'onboarding'; session: GoogleSession }
-
-const STORAGE_KEY = 'jude_auth'
-
-export function loadStoredAuth(): AuthUser | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw) as StoredAuth
-    return parsed.user ?? null
-  } catch {
-    return null
-  }
-}
-
-export function saveStoredAuth(user: AuthUser) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ user }))
-}
-
-export function clearStoredAuth() {
-  localStorage.removeItem(STORAGE_KEY)
+export interface OnboardingRequest {
+  inviteCode: string
+  nickname: string
 }
 
 export function resolveRoleFromInviteCode(code: string): UserRole {

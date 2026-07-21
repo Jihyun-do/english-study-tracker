@@ -3,6 +3,7 @@ import { AuthGuard, AdminGuard, GuestGuard, OnboardingGuard } from './guards'
 import { createUserRoutes } from './userRoutes'
 import { adminRouteConfig } from './adminRoutes'
 import { LoginPage } from '../pages/LoginPage'
+import { AuthCallbackPage } from '../pages/AuthCallbackPage'
 import { OnboardingInvitePage } from '../pages/onboarding/OnboardingInvitePage'
 import { OnboardingNicknamePage } from '../pages/onboarding/OnboardingNicknamePage'
 import { OnboardingCompletePage } from '../pages/onboarding/OnboardingCompletePage'
@@ -10,7 +11,10 @@ import { OnboardingCompletePage } from '../pages/onboarding/OnboardingCompletePa
 export const router = createBrowserRouter([
   {
     element: <GuestGuard />,
-    children: [{ path: '/login', element: <LoginPage /> }],
+    children: [
+      { path: '/login', element: <LoginPage /> },
+      { path: '/auth/callback', element: <AuthCallbackPage /> },
+    ],
   },
   {
     element: <OnboardingGuard />,

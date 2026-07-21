@@ -30,6 +30,9 @@ jwt:
   access-token-expiration: 1h
   refresh-token-expiration: 14d
 
+app:
+  frontend-url: http://localhost:5173
+
 logging:
   level:
     root: warn

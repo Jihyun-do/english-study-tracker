@@ -1,22 +1,9 @@
-import { useNavigate } from 'react-router-dom'
-import { useAuth, getPostLoginPath } from '../auth/AuthContext'
+import { useAuth } from '../auth/AuthContext'
 import { GoogleLoginButton } from '../components/auth/GoogleLoginButton'
 import styles from './LoginPage.module.css'
 
 export function LoginPage() {
   const { loginWithGoogle } = useAuth()
-  const navigate = useNavigate()
-
-  const handleGoogleLogin = () => {
-    const result = loginWithGoogle()
-
-    if (result.type === 'returning') {
-      navigate(getPostLoginPath(result.user.role), { replace: true })
-      return
-    }
-
-    navigate('/onboarding/invite-code')
-  }
 
   return (
     <div className={styles.page}>
@@ -32,7 +19,7 @@ export function LoginPage() {
         </header>
 
         <div className={styles.action}>
-          <GoogleLoginButton onClick={handleGoogleLogin} />
+          <GoogleLoginButton onClick={loginWithGoogle} />
         </div>
 
         <footer className={styles.footer}>

@@ -61,16 +61,22 @@ class CustomUserDetailsServiceTest {
     }
 
     @Test
-    @DisplayName("userId로 StudyMember가 없으면 UsernameNotFoundException을 발생시킨다")
+    @DisplayName("userId로 StudyMember가 없으면 onboarding principal을 반환한다")
     void loadUserByIdStudyMemberNotFound() {
         User user = mock(User.class);
+        when(user.getId()).thenReturn(1L);
+        when(user.getEmail()).thenReturn("user@example.com");
+        when(user.getNickname()).thenReturn("jude");
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(studyMemberRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> customUserDetailsService.loadUserById(1L))
-                .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessageContaining("Study member not found");
+        UserDetails userDetails = customUserDetailsService.loadUserById(1L);
+
+        assertThat(userDetails).isInstanceOf(CustomUserPrincipal.class);
+        CustomUserPrincipal principal = (CustomUserPrincipal) userDetails;
+        assertThat(principal.isOnboarding()).isTrue();
+        assertThat(principal.getAuthorities()).isEmpty();
     }
 
     @Test
@@ -105,19 +111,21 @@ class CustomUserDetailsServiceTest {
     }
 
     @Test
-    @DisplayName("StudyMember가 없으면 UsernameNotFoundException을 발생시킨다")
+    @DisplayName("StudyMember가 없으면 onboarding principal을 반환한다")
     void studyMemberNotFound() {
         User user = mock(User.class);
         when(user.getId()).thenReturn(1L);
+        when(user.getEmail()).thenReturn("user@example.com");
+        when(user.getNickname()).thenReturn("jude");
 
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(studyMemberRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> customUserDetailsService.loadUserByUsername("user@example.com"))
-                .isInstanceOf(UsernameNotFoundException.class)
-                .hasMessageContaining("Study member not found");
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername("user@example.com");
+
+        assertThat(userDetails).isInstanceOf(CustomUserPrincipal.class);
+        assertThat(((CustomUserPrincipal) userDetails).isOnboarding()).isTrue();
     }
 
     private User mockUser(Long id, String email, String nickname) {
@@ -131,6 +139,7 @@ class CustomUserDetailsServiceTest {
     private StudyMember mockStudyMember(String role) {
         StudyMember studyMember = mock(StudyMember.class);
         when(studyMember.getRole()).thenReturn(role);
+        when(studyMember.getStatus()).thenReturn("ACTIVE");
         return studyMember;
     }
 }

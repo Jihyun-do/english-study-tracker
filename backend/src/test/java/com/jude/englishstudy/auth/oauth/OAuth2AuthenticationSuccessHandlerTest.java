@@ -1,13 +1,12 @@
 package com.jude.englishstudy.auth.oauth;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jude.englishstudy.auth.dto.AuthStatus;
 import com.jude.englishstudy.auth.dto.LoginResponse;
 import com.jude.englishstudy.auth.dto.UserInfo;
 import com.jude.englishstudy.auth.service.AuthService;
+import com.jude.englishstudy.config.AppProperties;
 import com.jude.englishstudy.exception.BusinessException;
 import com.jude.englishstudy.exception.ErrorCode;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,35 +38,30 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
     private OAuth2AuthenticationSuccessHandler successHandler;
 
-    private ObjectMapper objectMapper;
-
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
-        objectMapper.findAndRegisterModules();
+        AppProperties appProperties = new AppProperties();
+        appProperties.setFrontendUrl("http://localhost:5173");
 
         successHandler = new OAuth2AuthenticationSuccessHandler(
                 authService,
                 deviceInfoResolver,
-                new OAuth2LoginResponseWriter(objectMapper)
+                new OAuth2LoginResponseWriter(appProperties)
         );
     }
 
     @Test
-    @DisplayName("OAuth2 로그인 성공 시 JWT를 포함한 JSON 응답을 반환한다")
+    @DisplayName("OAuth2 로그인 성공 시 프론트 callback으로 Redirect한다")
     void onAuthenticationSuccess() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
         Authentication authentication = mock(Authentication.class);
         OAuth2User oauth2User = createOAuth2User();
-        LoginResponse loginResponse = new LoginResponse(
+        LoginResponse loginResponse = LoginResponse.registered(
+                mockUser(),
+                mockStudyMember(),
                 "access.token",
-                "refresh.token",
-                1L,
-                "user@example.com",
-                "jude",
-                "https://example.com/profile.png",
-                "ADMIN"
+                "refresh.token"
         );
 
         when(authentication.getPrincipal()).thenReturn(oauth2User);
@@ -76,18 +70,46 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
         successHandler.onAuthenticationSuccess(request, response, authentication);
 
-        assertThat(response.getStatus()).isEqualTo(HttpServletResponse.SC_OK);
-
-        JsonNode json = objectMapper.readTree(response.getContentAsString());
-        assertThat(json.get("success").asBoolean()).isTrue();
-        assertThat(json.get("data").get("accessToken").asText()).isEqualTo("access.token");
-        assertThat(json.get("data").get("refreshToken").asText()).isEqualTo("refresh.token");
+        assertThat(response.getStatus()).isEqualTo(302);
+        assertThat(response.getRedirectedUrl())
+                .startsWith("http://localhost:5173/auth/callback")
+                .contains("accessToken=access.token")
+                .contains("refreshToken=refresh.token")
+                .contains("status=registered");
 
         verify(authService).login(any(UserInfo.class));
     }
 
     @Test
-    @DisplayName("AuthService 예외 발생 시 공통 에러 응답을 반환한다")
+    @DisplayName("StudyMember가 없으면 onboarding callback으로 Redirect한다")
+    void onAuthenticationSuccessOnboarding() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        Authentication authentication = mock(Authentication.class);
+        OAuth2User oauth2User = createOAuth2User();
+        LoginResponse loginResponse = LoginResponse.onboarding(
+                mockUser(),
+                "access.token",
+                "refresh.token"
+        );
+
+        when(authentication.getPrincipal()).thenReturn(oauth2User);
+        when(deviceInfoResolver.resolve(request)).thenReturn(new DeviceInfo("device-1", "Chrome"));
+        when(authService.login(any(UserInfo.class))).thenReturn(loginResponse);
+
+        successHandler.onAuthenticationSuccess(request, response, authentication);
+
+        assertThat(response.getStatus()).isEqualTo(302);
+        assertThat(response.getRedirectedUrl())
+                .startsWith("http://localhost:5173/auth/callback")
+                .contains("status=onboarding")
+                .contains("accessToken=access.token")
+                .contains("email=")
+                .contains("nickname=jude");
+    }
+
+    @Test
+    @DisplayName("AuthService 예외 발생 시 error callback으로 Redirect한다")
     void onAuthenticationSuccessBusinessException() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -97,15 +119,13 @@ class OAuth2AuthenticationSuccessHandlerTest {
         when(authentication.getPrincipal()).thenReturn(oauth2User);
         when(deviceInfoResolver.resolve(request)).thenReturn(new DeviceInfo("device-1", "Chrome"));
         when(authService.login(any(UserInfo.class)))
-                .thenThrow(new BusinessException(ErrorCode.FORBIDDEN, "Study membership is required to login"));
+                .thenThrow(new BusinessException(ErrorCode.UNAUTHORIZED, "Google account mismatch"));
 
         successHandler.onAuthenticationSuccess(request, response, authentication);
 
-        assertThat(response.getStatus()).isEqualTo(ErrorCode.FORBIDDEN.getHttpStatus().value());
-
-        JsonNode json = objectMapper.readTree(response.getContentAsString());
-        assertThat(json.get("code").asText()).isEqualTo(ErrorCode.FORBIDDEN.name());
-        assertThat(json.get("message").asText()).contains("Study membership");
+        assertThat(response.getStatus()).isEqualTo(302);
+        assertThat(response.getRedirectedUrl())
+                .contains("error=" + ErrorCode.UNAUTHORIZED.name());
     }
 
     private OAuth2User createOAuth2User() {
@@ -119,5 +139,22 @@ class OAuth2AuthenticationSuccessHandlerTest {
                 ),
                 GoogleOAuth2Attributes.SUB
         );
+    }
+
+    private com.jude.englishstudy.domain.entity.User mockUser() {
+        com.jude.englishstudy.domain.entity.User user = mock(com.jude.englishstudy.domain.entity.User.class);
+        when(user.getId()).thenReturn(1L);
+        when(user.getEmail()).thenReturn("user@example.com");
+        when(user.getNickname()).thenReturn("jude");
+        when(user.getProfileImageUrl()).thenReturn("https://example.com/profile.png");
+        return user;
+    }
+
+    private com.jude.englishstudy.domain.entity.StudyMember mockStudyMember() {
+        com.jude.englishstudy.domain.entity.StudyMember studyMember =
+                mock(com.jude.englishstudy.domain.entity.StudyMember.class);
+        when(studyMember.getStudyId()).thenReturn(10L);
+        when(studyMember.getRole()).thenReturn("ADMIN");
+        return studyMember;
     }
 }

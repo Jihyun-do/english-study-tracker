@@ -21,8 +21,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:local-google-client-id}
-            client-secret: ${GOOGLE_CLIENT_SECRET:local-google-client-secret}
+            client-id: 920507224309-a1sql8fvk9977rh7fkrnejrvvkp991vk.apps.googleusercontent.com
+            client-secret: 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
             scope:
               - email
               - profile
@@ -36,8 +36,14 @@ spring:
 jwt:
   secret: ${JWT_SECRET:local-dev-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256}
 
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+
 logging:
   level:
     com.jude.englishstudy: debug
     org.hibernate.SQL: debug
     org.hibernate.orm.jdbc.bind: trace
+    org.springframework.security: TRACE
+    org.springframework.security.oauth2: TRACE
+

@@ -43,4 +43,15 @@ public class StudyMember {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public static StudyMember join(Long studyId, Long userId, String role, LocalDateTime now) {
+        StudyMember studyMember = new StudyMember();
+        studyMember.studyId = studyId;
+        studyMember.userId = userId;
+        studyMember.role = role;
+        studyMember.status = "ACTIVE";
+        studyMember.joinedAt = now;
+        studyMember.updatedAt = now;
+        return studyMember;
+    }
 }

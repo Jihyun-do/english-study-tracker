@@ -19,8 +19,9 @@ export function OnboardingCompletePage() {
   }, [onboardingDraft, navigate])
 
   const handleStart = () => {
-    const user = completeOnboarding()
-    navigate(getPostLoginPath(user.role), { replace: true })
+    void completeOnboarding().then((user) => {
+      navigate(getPostLoginPath(user.role), { replace: true })
+    })
   }
 
   return (
