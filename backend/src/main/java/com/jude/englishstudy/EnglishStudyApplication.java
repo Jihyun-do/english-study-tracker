@@ -1,6 +1,6 @@
 package com.jude.englishstudy;
 
-import com.jude.englishstudy.config.JwtProperties;
+import com.jude.englishstudy.security.jwt.JwtProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

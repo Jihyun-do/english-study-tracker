@@ -27,6 +27,8 @@ spring:
 
 jwt:
   secret: test-jwt-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm
+  access-token-expiration: 1h
+  refresh-token-expiration: 14d
 
 logging:
   level:
