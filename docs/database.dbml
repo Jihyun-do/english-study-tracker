@@ -1,0 +1,504 @@
+// Jude's English Study - ERD (DBML)
+// Source: docs/database.md v1.0
+// dbdiagram.io: https://dbdiagram.io
+
+Project jude_english_study {
+  database_type: 'MariaDB'
+  Note: '''
+    # Jude's English Study Database
+    - Physical FK Constraint 없음 (Logical FK만 사용)
+    - 파일 Binary는 DB 미저장 (메타데이터만 저장)
+    - Google OAuth 로그인 전용
+  '''
+}
+
+// ============================================================
+// Core
+// ============================================================
+
+TableGroup core {
+  study
+  user
+  study_member
+  file
+}
+
+Table study {
+  id bigint [pk, increment, note: '스터디 PK']
+  name varchar(100) [not null, note: '스터디명']
+  description text [note: '스터디 소개']
+  logo_file_id bigint [note: '스터디 대표 이미지 (Logical FK → file.id)']
+  owner_user_id bigint [not null, note: '스터디장 (Logical FK → user.id)']
+  invite_code varchar(50) [unique, not null, note: '스터디 초대 코드']
+  start_date date [not null, note: '스터디 시작일']
+  max_member_count int [not null, default: 20, note: '최대 스터디 인원 (CHECK: > 0)']
+  is_public boolean [not null, default: false, note: '공개 여부']
+  status varchar(20) [not null, default: 'ACTIVE', note: 'Enum: ACTIVE(운영중), INACTIVE(비활성)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일']
+
+  indexes {
+    owner_user_id [name: 'IDX_STUDY_OWNER_USER_ID']
+    status [name: 'IDX_STUDY_STATUS']
+    start_date [name: 'IDX_STUDY_START_DATE']
+  }
+}
+
+Table user {
+  id bigint [pk, increment, note: '사용자 PK']
+  google_id varchar(100) [unique, not null, note: 'Google 사용자 ID']
+  email varchar(100) [unique, not null, note: 'Google 이메일']
+  nickname varchar(50) [not null, note: '닉네임']
+  profile_image_url varchar(500) [note: 'Google 프로필 이미지']
+  profile_file_id bigint [note: '업로드 프로필 이미지 (Logical FK → file.id)']
+  status varchar(20) [not null, default: 'ACTIVE', note: 'Enum: ACTIVE(활동중), INACTIVE(비활성), WITHDRAWN(탈퇴)']
+  last_login_at datetime [note: '마지막 로그인']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '가입일']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일']
+  terms_agreed_at datetime [not null, note: '이용약관 동의']
+  privacy_agreed_at datetime [not null, note: '개인정보 동의']
+
+  indexes {
+    status [name: 'IDX_USER_STATUS']
+    last_login_at [name: 'IDX_USER_LAST_LOGIN_AT']
+  }
+}
+
+Table study_member {
+  id bigint [pk, increment, note: '스터디 회원 PK']
+  study_id bigint [not null, note: '스터디 (Logical FK → study.id)']
+  user_id bigint [not null, note: '사용자 (Logical FK → user.id)']
+  role varchar(20) [not null, default: 'MEMBER', note: 'Enum: OWNER(스터디장), ADMIN(관리자), MEMBER(일반 회원)']
+  status varchar(20) [not null, default: 'ACTIVE', note: 'Enum: ACTIVE(활동중), LEFT(탈퇴), KICKED(강퇴)']
+  joined_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '가입일']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일']
+
+  indexes {
+    (study_id, user_id) [unique, name: 'UK_STUDY_MEMBER']
+    study_id [name: 'IDX_STUDY_MEMBER_STUDY']
+    user_id [name: 'IDX_STUDY_MEMBER_USER']
+    role [name: 'IDX_STUDY_MEMBER_ROLE']
+    status [name: 'IDX_STUDY_MEMBER_STATUS']
+  }
+}
+
+Table file {
+  id bigint [pk, increment, note: '파일 PK']
+  study_id bigint [not null, note: '스터디 (Logical FK → study.id)']
+  user_id bigint [not null, note: '업로더 (Logical FK → user.id)']
+  original_name varchar(255) [not null, note: '원본 파일명']
+  stored_name varchar(255) [not null, note: '저장 파일명']
+  mime_type varchar(100) [not null, note: 'MIME Type']
+  file_ext varchar(20) [not null, note: '확장자']
+  file_size bigint [not null, note: '파일 크기']
+  status varchar(20) [not null, default: 'ACTIVE', note: 'Enum: ACTIVE(정상), EXPIRED(다운로드 만료), DELETED(삭제)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+
+  indexes {
+    study_id [name: 'IDX_FILE_STUDY']
+    user_id [name: 'IDX_FILE_UPLOADER']
+    status [name: 'IDX_FILE_STATUS']
+  }
+}
+
+// ============================================================
+// Assignment
+// ============================================================
+
+TableGroup assignment {
+  assignment
+  assignment_file
+  assignment_submission
+  assignment_submission_file
+}
+
+Table assignment {
+  id bigint [pk, increment, note: '과제 PK']
+  study_id bigint [not null, note: '스터디 (Logical FK → study.id)']
+  title varchar(200) [not null, note: '과제 제목']
+  description text [note: '과제 설명 및 안내사항']
+  start_at datetime [not null, note: '과제 공개 시작 일시']
+  due_at datetime [not null, note: '과제 제출 마감 일시 (CHECK: start_at <= due_at)']
+  created_by bigint [not null, note: '등록자 (Logical FK → user.id)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일시']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일시']
+  // 상태는 저장하지 않음 — 계산값: 예약(NOW() < start_at), 진행중(start_at <= NOW() <= due_at), 마감(NOW() > due_at)
+
+  indexes {
+    study_id [name: 'IDX_ASSIGNMENT_STUDY']
+    start_at [name: 'IDX_ASSIGNMENT_START']
+    due_at [name: 'IDX_ASSIGNMENT_DUE']
+    created_by [name: 'IDX_ASSIGNMENT_CREATED_BY']
+  }
+}
+
+Table assignment_file {
+  id bigint [pk, increment, note: '과제 첨부파일 PK']
+  assignment_id bigint [not null, note: '과제 (Logical FK → assignment.id)']
+  file_id bigint [not null, note: '파일 (Logical FK → file.id)']
+  sort_order int [not null, default: 1, note: '첨부파일 표시 순서']
+
+  indexes {
+    (assignment_id, file_id) [unique, name: 'UQ_ASSIGNMENT_FILE']
+    assignment_id [name: 'IDX_ASSIGNMENT_FILE_ASSIGNMENT']
+    file_id [name: 'IDX_ASSIGNMENT_FILE_FILE']
+  }
+}
+
+Table assignment_submission {
+  id bigint [pk, increment, note: '제출 PK']
+  assignment_id bigint [not null, note: '과제 (Logical FK → assignment.id)']
+  user_id bigint [not null, note: '제출자 (Logical FK → user.id)']
+  comment text [note: '제출 내용 및 코멘트']
+  submitted_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '최초 제출일시']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '마지막 수정일시']
+
+  indexes {
+    (assignment_id, user_id) [unique, name: 'UQ_ASSIGNMENT_SUBMISSION']
+    assignment_id [name: 'IDX_ASSIGNMENT_SUBMISSION_ASSIGNMENT']
+    user_id [name: 'IDX_ASSIGNMENT_SUBMISSION_USER']
+  }
+}
+
+Table assignment_submission_file {
+  id bigint [pk, increment, note: '제출 첨부파일 PK']
+  submission_id bigint [not null, note: '제출 (Logical FK → assignment_submission.id)']
+  file_id bigint [not null, note: '파일 (Logical FK → file.id)']
+  sort_order int [not null, default: 1, note: '첨부파일 표시 순서']
+
+  indexes {
+    (submission_id, file_id) [unique, name: 'UQ_ASSIGNMENT_SUBMISSION_FILE']
+    submission_id [name: 'IDX_ASSIGNMENT_SUBMISSION_FILE_SUBMISSION']
+    file_id [name: 'IDX_ASSIGNMENT_SUBMISSION_FILE_FILE']
+  }
+}
+
+// ============================================================
+// Feed
+// ============================================================
+
+TableGroup feed {
+  feed
+  feed_comment
+  feed_comment_file
+  feed_like
+}
+
+Table feed {
+  id bigint [pk, increment, note: '인증 피드 PK']
+  study_id bigint [not null, note: '스터디 (Logical FK → study.id)']
+  assignment_submission_id bigint [unique, not null, note: '과제 제출 (Logical FK → assignment_submission.id)']
+  feed_type varchar(20) [not null, default: 'ASSIGNMENT', note: 'Enum: ASSIGNMENT(과제 인증)']
+  is_hidden boolean [not null, default: false, note: '관리자 숨김 여부']
+  hidden_by bigint [note: '숨김 처리 관리자 (Logical FK → user.id)']
+  hidden_at datetime [note: '숨김 처리 일시']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일시']
+
+  indexes {
+    study_id [name: 'IDX_FEED_STUDY']
+    assignment_submission_id [name: 'IDX_FEED_SUBMISSION']
+    feed_type [name: 'IDX_FEED_TYPE']
+    created_at [name: 'IDX_FEED_CREATED_AT']
+  }
+}
+
+Table feed_comment {
+  id bigint [pk, increment, note: '댓글 PK']
+  feed_id bigint [not null, note: '인증 피드 (Logical FK → feed.id)']
+  user_id bigint [not null, note: '작성자 (Logical FK → user.id)']
+  content text [not null, note: '댓글 내용']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '작성일시']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일시']
+
+  indexes {
+    feed_id [name: 'IDX_FEED_COMMENT_FEED']
+    user_id [name: 'IDX_FEED_COMMENT_USER']
+    created_at [name: 'IDX_FEED_COMMENT_CREATED_AT']
+  }
+}
+
+Table feed_comment_file {
+  id bigint [pk, increment, note: '댓글 첨부파일 PK']
+  comment_id bigint [not null, note: '댓글 (Logical FK → feed_comment.id)']
+  file_id bigint [not null, note: '파일 (Logical FK → file.id)']
+  sort_order int [not null, default: 1, note: '첨부파일 표시 순서']
+
+  indexes {
+    (comment_id, file_id) [unique, name: 'UQ_FEED_COMMENT_FILE']
+    comment_id [name: 'IDX_FEED_COMMENT_FILE_COMMENT']
+    file_id [name: 'IDX_FEED_COMMENT_FILE_FILE']
+  }
+}
+
+Table feed_like {
+  id bigint [pk, increment, note: '좋아요 PK']
+  feed_id bigint [not null, note: '인증 피드 (Logical FK → feed.id)']
+  user_id bigint [not null, note: '좋아요 사용자 (Logical FK → user.id)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '좋아요 생성일시']
+
+  indexes {
+    (feed_id, user_id) [unique, name: 'UQ_FEED_LIKE']
+    feed_id [name: 'IDX_FEED_LIKE_FEED']
+    user_id [name: 'IDX_FEED_LIKE_USER']
+  }
+}
+
+// ============================================================
+// Topic / Vote
+// ============================================================
+
+TableGroup topic_vote {
+  topic
+  topic_vote
+  notice
+  vote
+  vote_option
+  vote_answer
+}
+
+Table topic {
+  id bigint [pk, increment, note: '주제 PK']
+  study_id bigint [not null, note: '스터디 (Logical FK → study.id)']
+  user_id bigint [not null, note: '작성자 (Logical FK → user.id)']
+  title varchar(200) [not null, note: '주제 제목']
+  description text [note: '주제 설명']
+  status varchar(20) [not null, default: 'PENDING', note: 'Enum: PENDING(대기), APPROVED(채택), REJECTED(반려)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일']
+
+  indexes {
+    study_id [name: 'IDX_TOPIC_STUDY']
+    user_id [name: 'IDX_TOPIC_USER']
+    status [name: 'IDX_TOPIC_STATUS']
+    created_at [name: 'IDX_TOPIC_CREATED_AT']
+  }
+}
+
+Table topic_vote {
+  id bigint [pk, increment, note: '추천 PK']
+  topic_id bigint [not null, note: '주제 (Logical FK → topic.id)']
+  user_id bigint [not null, note: '추천 사용자 (Logical FK → user.id)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '추천일']
+
+  indexes {
+    (topic_id, user_id) [unique, name: 'UQ_TOPIC_VOTE']
+    topic_id [name: 'IDX_TOPIC_VOTE_TOPIC']
+    user_id [name: 'IDX_TOPIC_VOTE_USER']
+  }
+}
+
+Table notice {
+  id bigint [pk, increment, note: '공지 PK']
+  study_id bigint [not null, note: '스터디 (Logical FK → study.id)']
+  title varchar(200) [not null, note: '공지 제목']
+  content text [not null, note: '공지 내용']
+  created_by bigint [not null, note: '작성 관리자 (Logical FK → user.id)']
+  is_pinned boolean [not null, default: false, note: '상단 고정 여부']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일']
+
+  indexes {
+    study_id [name: 'IDX_NOTICE_STUDY']
+    created_by [name: 'IDX_NOTICE_CREATED_BY']
+    is_pinned [name: 'IDX_NOTICE_PINNED']
+    created_at [name: 'IDX_NOTICE_CREATED_AT']
+  }
+}
+
+Table vote {
+  id bigint [pk, increment, note: '투표 PK']
+  study_id bigint [not null, note: '스터디 (Logical FK → study.id)']
+  title varchar(200) [not null, note: '투표 제목']
+  description text [note: '투표 설명']
+  created_by bigint [not null, note: '작성 관리자 (Logical FK → user.id)']
+  allow_multiple boolean [not null, default: false, note: '복수 선택 허용 여부']
+  is_anonymous boolean [not null, default: false, note: '익명 투표 여부']
+  start_at datetime [not null, note: '시작일시']
+  end_at datetime [not null, note: '종료일시 (CHECK: start_at < end_at)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일']
+  // 진행 상태는 start_at / end_at으로 계산
+
+  indexes {
+    study_id [name: 'IDX_VOTE_STUDY']
+    created_by [name: 'IDX_VOTE_CREATED_BY']
+    end_at [name: 'IDX_VOTE_END_AT']
+    created_at [name: 'IDX_VOTE_CREATED_AT']
+  }
+}
+
+Table vote_option {
+  id bigint [pk, increment, note: '선택지 PK']
+  vote_id bigint [not null, note: '투표 (Logical FK → vote.id)']
+  content varchar(200) [not null, note: '선택지 내용']
+  sort_order int [not null, default: 1, note: '표시 순서 (CHECK: >= 1)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+
+  indexes {
+    vote_id [name: 'IDX_VOTE_OPTION_VOTE']
+    (vote_id, sort_order) [name: 'IDX_VOTE_OPTION_SORT']
+  }
+}
+
+Table vote_answer {
+  id bigint [pk, increment, note: '투표 결과 PK']
+  vote_id bigint [not null, note: '투표 (Logical FK → vote.id)']
+  vote_option_id bigint [not null, note: '선택지 (Logical FK → vote_option.id)']
+  user_id bigint [not null, note: '사용자 (Logical FK → user.id)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '투표일시']
+
+  indexes {
+    (vote_option_id, user_id) [unique, name: 'UK_VOTE_ANSWER']
+    vote_id [name: 'IDX_VOTE_ANSWER_VOTE']
+    vote_option_id [name: 'IDX_VOTE_ANSWER_OPTION']
+    user_id [name: 'IDX_VOTE_ANSWER_USER']
+  }
+}
+
+// ============================================================
+// System
+// ============================================================
+
+TableGroup system {
+  notification
+  refresh_token
+  encouragement_message
+}
+
+Table notification {
+  id bigint [pk, increment, note: '알림 PK']
+  study_id bigint [not null, note: '스터디 (Logical FK → study.id)']
+  user_id bigint [not null, note: '알림 대상 사용자 (Logical FK → user.id)']
+  type varchar(30) [not null, note: 'Enum: ASSIGNMENT(과제), FEED_COMMENT(댓글), NOTICE(공지), VOTE(투표), SYSTEM(시스템)']
+  title varchar(200) [not null, note: '알림 제목']
+  content text [not null, note: '알림 내용']
+  target_type varchar(30) [not null, note: 'Enum: ASSIGNMENT(과제), FEED(인증 피드), NOTICE(공지), VOTE(투표)']
+  target_id bigint [not null, note: '이동 대상 PK (논리 참조)']
+  is_read boolean [not null, default: false, note: '읽음 여부']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+  read_at datetime [note: '읽은 일시']
+
+  indexes {
+    user_id [name: 'IDX_NOTIFICATION_USER']
+    study_id [name: 'IDX_NOTIFICATION_STUDY']
+    is_read [name: 'IDX_NOTIFICATION_READ']
+    created_at [name: 'IDX_NOTIFICATION_CREATED_AT']
+  }
+}
+
+Table refresh_token {
+  id bigint [pk, increment, note: 'PK']
+  user_id bigint [not null, note: '사용자 (Logical FK → user.id)']
+  refresh_token varchar(500) [unique, not null, note: 'Refresh Token']
+  device_id varchar(100) [not null, note: '디바이스 식별값']
+  device_name varchar(100) [not null, note: '디바이스 이름 (User-Agent 기반)']
+  expires_at datetime [not null, note: '만료일']
+  last_access_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '마지막 사용']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+
+  indexes {
+    user_id [name: 'IDX_REFRESH_TOKEN_USER']
+    device_id [name: 'IDX_REFRESH_TOKEN_DEVICE']
+    expires_at [name: 'IDX_REFRESH_TOKEN_EXPIRES']
+  }
+}
+
+Table encouragement_message {
+  id bigint [pk, increment, note: 'PK']
+  content varchar(300) [not null, note: '응원 문구']
+  is_active boolean [not null, default: true, note: '사용 여부']
+  created_by bigint [not null, note: '등록 관리자 (Logical FK → user.id)']
+  created_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '생성일']
+  updated_at datetime [not null, default: `CURRENT_TIMESTAMP`, note: '수정일']
+
+  indexes {
+    is_active [name: 'IDX_ENCOURAGEMENT_ACTIVE']
+    created_by [name: 'IDX_ENCOURAGEMENT_CREATED_BY']
+  }
+}
+
+// ============================================================
+// Logical FK References
+// ============================================================
+
+// --- study ---
+Ref: study.owner_user_id > user.id
+Ref: study.logo_file_id > file.id
+
+// --- user ---
+Ref: user.profile_file_id > file.id
+
+// --- study_member ---
+Ref: study_member.study_id > study.id
+Ref: study_member.user_id > user.id
+
+// --- file ---
+Ref: file.study_id > study.id
+Ref: file.user_id > user.id
+
+// --- assignment ---
+Ref: assignment.study_id > study.id
+Ref: assignment.created_by > user.id
+
+// --- assignment_file ---
+Ref: assignment_file.assignment_id > assignment.id
+Ref: assignment_file.file_id > file.id
+
+// --- assignment_submission ---
+Ref: assignment_submission.assignment_id > assignment.id
+Ref: assignment_submission.user_id > user.id
+
+// --- assignment_submission_file ---
+Ref: assignment_submission_file.submission_id > assignment_submission.id
+Ref: assignment_submission_file.file_id > file.id
+
+// --- feed ---
+Ref: feed.study_id > study.id
+Ref: feed.assignment_submission_id > assignment_submission.id
+Ref: feed.hidden_by > user.id
+
+// --- feed_comment ---
+Ref: feed_comment.feed_id > feed.id
+Ref: feed_comment.user_id > user.id
+
+// --- feed_comment_file ---
+Ref: feed_comment_file.comment_id > feed_comment.id
+Ref: feed_comment_file.file_id > file.id
+
+// --- feed_like ---
+Ref: feed_like.feed_id > feed.id
+Ref: feed_like.user_id > user.id
+
+// --- topic ---
+Ref: topic.study_id > study.id
+Ref: topic.user_id > user.id
+
+// --- topic_vote ---
+Ref: topic_vote.topic_id > topic.id
+Ref: topic_vote.user_id > user.id
+
+// --- notice ---
+Ref: notice.study_id > study.id
+Ref: notice.created_by > user.id
+
+// --- vote ---
+Ref: vote.study_id > study.id
+Ref: vote.created_by > user.id
+
+// --- vote_option ---
+Ref: vote_option.vote_id > vote.id
+
+// --- vote_answer ---
+Ref: vote_answer.vote_id > vote.id
+Ref: vote_answer.vote_option_id > vote_option.id
+Ref: vote_answer.user_id > user.id
+
+// --- notification ---
+Ref: notification.study_id > study.id
+Ref: notification.user_id > user.id
+
+// --- refresh_token ---
+Ref: refresh_token.user_id > user.id
+
+// --- encouragement_message ---
+Ref: encouragement_message.created_by > user.id
