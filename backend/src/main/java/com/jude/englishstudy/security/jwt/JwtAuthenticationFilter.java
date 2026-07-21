@@ -1,15 +1,19 @@
 package com.jude.englishstudy.security.jwt;
 
 import com.jude.englishstudy.security.config.PublicPathMatcher;
+import com.jude.englishstudy.security.principal.CustomUserPrincipal;
+import com.jude.englishstudy.security.service.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,22 +21,19 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Authorization Header의 Bearer Access Token을 파싱하는 필터.
- *
- * <p>인증 객체 생성은 추후 {@code JwtAuthenticationService} 등으로 위임할 수 있다.
- * UserDetailsService 구현 후 SecurityConfig에 등록한다.</p>
+ * Authorization Header의 Bearer Access Token을 검증하고 SecurityContext에 Authentication을 설정한다.
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final PublicPathMatcher publicPathMatcher;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final WebAuthenticationDetailsSource authenticationDetailsSource = new WebAuthenticationDetailsSource();
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        // SecurityConfig PUBLIC_URLS와 동일한 정책 — JWT 검증 불필요 경로 제외
         return publicPathMatcher.matchesPublicPath(request);
     }
 
@@ -49,38 +50,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = extractAccessToken(request);
         if (StringUtils.hasText(token)) {
-            authenticate(token);
+            authenticate(token, request);
         }
 
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Access Token Claims 파싱 후 Authentication 설정.
-     * 실제 User 조회·Principal 생성은 추후 서비스 계층으로 위임한다.
-     */
-    private void authenticate(String token) {
-        try {
-            Claims claims = jwtTokenProvider.getClaims(token);
-            validateAccessTokenType(claims);
+    private void authenticate(String token, HttpServletRequest request) {
+        Claims claims = jwtTokenProvider.getClaims(token);
+        validateAccessTokenType(claims);
 
-            // TODO: 1. JWT에서 userId 추출
-            // Long userId = jwtTokenProvider.getUserId(token);
+        String email = claims.getSubject();
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+        CustomUserPrincipal principal = (CustomUserPrincipal) userDetails;
 
-            // TODO: 2. User 조회
-            // TODO: 3. StudyMember 조회 (MVP: 사용자당 1개 스터디)
-            // TODO: 4. CustomUserPrincipal 생성
-            // CustomUserPrincipal principal = CustomUserPrincipal.from(user, studyMember);
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
+        authentication.setDetails(authenticationDetailsSource.buildDetails(request));
 
-            // TODO: 5. UsernamePasswordAuthenticationToken 생성
-            // UsernamePasswordAuthenticationToken authentication =
-            //         new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
-
-            // TODO: 6. SecurityContextHolder에 Authentication 저장
-            // SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (JwtTokenException exception) {
-            log.debug("JWT authentication skipped [{}]: {}", exception.getErrorCode(), exception.getMessage());
-        }
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private void validateAccessTokenType(Claims claims) {

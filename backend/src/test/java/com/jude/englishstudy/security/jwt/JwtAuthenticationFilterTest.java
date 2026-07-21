@@ -1,6 +1,9 @@
 package com.jude.englishstudy.security.jwt;
 
 import com.jude.englishstudy.security.config.PublicPathMatcher;
+import com.jude.englishstudy.security.principal.CustomUserPrincipal;
+import com.jude.englishstudy.security.service.CustomUserDetailsService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,10 +15,18 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +39,9 @@ class JwtAuthenticationFilterTest {
 
     @Mock
     private PublicPathMatcher publicPathMatcher;
+
+    @Mock
+    private CustomUserDetailsService customUserDetailsService;
 
     @InjectMocks
     private JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -65,6 +79,36 @@ class JwtAuthenticationFilterTest {
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         verify(jwtTokenProvider, never()).getClaims(any());
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+        assertThat(filterChain.getRequest()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("유효한 Access Token이면 SecurityContext에 Authentication을 설정한다")
+    void doFilterWithValidToken() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/assignments");
+        request.addHeader("Authorization", "Bearer valid.token");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockFilterChain filterChain = new MockFilterChain();
+
+        Claims claims = mock(Claims.class);
+        CustomUserPrincipal principal = createPrincipal("user@example.com");
+
+        when(claims.getSubject()).thenReturn("user@example.com");
+        when(claims.get(JwtConstants.CLAIM_TOKEN_TYPE, String.class)).thenReturn(TokenType.ACCESS.name());
+        when(jwtTokenProvider.getClaims("valid.token")).thenReturn(claims);
+        when(customUserDetailsService.loadUserByUsername("user@example.com")).thenReturn(principal);
+
+        jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        UsernamePasswordAuthenticationToken authentication =
+                (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+
+        assertThat(authentication).isNotNull();
+        assertThat(authentication.getPrincipal()).isEqualTo(principal);
+        assertThat(authentication.getCredentials()).isNull();
+        assertThat(authentication.getAuthorities()).containsExactly(new SimpleGrantedAuthority("ROLE_MEMBER"));
+        assertThat(authentication.getDetails()).isNotNull();
         assertThat(filterChain.getRequest()).isNotNull();
     }
 
@@ -72,15 +116,43 @@ class JwtAuthenticationFilterTest {
     @DisplayName("Bearer Token 추출 시 trim을 적용한다")
     void extractAccessTokenWithTrim() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/assignments");
-        request.addHeader("Authorization", "Bearer   invalid.token.value   ");
+        request.addHeader("Authorization", "Bearer   valid.token   ");
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();
 
-        when(jwtTokenProvider.getClaims("invalid.token.value"))
-                .thenThrow(new JwtTokenException(JwtErrorCode.INVALID));
+        Claims claims = mock(Claims.class);
+        CustomUserPrincipal principal = createPrincipal("user@example.com");
+
+        when(claims.getSubject()).thenReturn("user@example.com");
+        when(claims.get(JwtConstants.CLAIM_TOKEN_TYPE, String.class)).thenReturn(TokenType.ACCESS.name());
+        when(jwtTokenProvider.getClaims("valid.token")).thenReturn(claims);
+        when(customUserDetailsService.loadUserByUsername("user@example.com")).thenReturn(principal);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
-        verify(jwtTokenProvider).getClaims("invalid.token.value");
+        verify(jwtTokenProvider).getClaims("valid.token");
+    }
+
+    @Test
+    @DisplayName("JWT 예외는 Filter에서 삼키지 않고 전파한다")
+    void propagateJwtTokenException() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/assignments");
+        request.addHeader("Authorization", "Bearer invalid.token");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockFilterChain filterChain = new MockFilterChain();
+
+        when(jwtTokenProvider.getClaims("invalid.token"))
+                .thenThrow(new JwtTokenException(JwtErrorCode.INVALID));
+
+        assertThatThrownBy(() -> jwtAuthenticationFilter.doFilterInternal(request, response, filterChain))
+                .isInstanceOf(JwtTokenException.class);
+
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    private CustomUserPrincipal createPrincipal(String email) {
+        CustomUserPrincipal principal = mock(CustomUserPrincipal.class);
+        doReturn(List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))).when(principal).getAuthorities();
+        return principal;
     }
 }
