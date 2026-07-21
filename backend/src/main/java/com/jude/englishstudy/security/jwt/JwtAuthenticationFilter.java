@@ -68,16 +68,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Long userId = jwtTokenProvider.getUserId(token);
 
             // TODO: 2. User 조회
-            // User user = userService.findById(userId);
+            // TODO: 3. StudyMember 조회 (MVP: 사용자당 1개 스터디)
+            // TODO: 4. CustomUserPrincipal 생성
+            // CustomUserPrincipal principal = CustomUserPrincipal.from(user, studyMember);
 
-            // TODO: 3. CustomUserPrincipal 생성
-            // CustomUserPrincipal principal = CustomUserPrincipal.from(user);
-
-            // TODO: 4. UsernamePasswordAuthenticationToken 생성
+            // TODO: 5. UsernamePasswordAuthenticationToken 생성
             // UsernamePasswordAuthenticationToken authentication =
             //         new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
 
-            // TODO: 5. SecurityContextHolder에 Authentication 저장
+            // TODO: 6. SecurityContextHolder에 Authentication 저장
             // SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (JwtTokenException exception) {
             log.debug("JWT authentication skipped [{}]: {}", exception.getErrorCode(), exception.getMessage());
