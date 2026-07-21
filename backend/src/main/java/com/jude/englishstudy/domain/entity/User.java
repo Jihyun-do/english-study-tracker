@@ -48,4 +48,28 @@ public class User extends BaseTimeEntity {
 
     @Column(name = "privacy_agreed_at", nullable = false)
     private LocalDateTime privacyAgreedAt;
+
+    public static User createGoogleUser(
+            String googleId,
+            String email,
+            String nickname,
+            String profileImageUrl,
+            LocalDateTime agreedAt) {
+        User user = new User();
+        user.googleId = googleId;
+        user.email = email;
+        user.nickname = nickname;
+        user.profileImageUrl = profileImageUrl;
+        user.status = "ACTIVE";
+        user.lastLoginAt = agreedAt;
+        user.termsAgreedAt = agreedAt;
+        user.privacyAgreedAt = agreedAt;
+        return user;
+    }
+
+    public void updateLoginInfo(String nickname, String profileImageUrl, LocalDateTime lastLoginAt) {
+        this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
+        this.lastLoginAt = lastLoginAt;
+    }
 }

@@ -1,5 +1,8 @@
 package com.jude.englishstudy.security.config;
 
+import com.jude.englishstudy.auth.oauth.CustomOAuth2UserService;
+import com.jude.englishstudy.auth.oauth.OAuth2AuthenticationFailureHandler;
+import com.jude.englishstudy.auth.oauth.OAuth2AuthenticationSuccessHandler;
 import com.jude.englishstudy.security.jwt.JwtAccessDeniedHandler;
 import com.jude.englishstudy.security.jwt.JwtAuthenticationEntryPoint;
 import com.jude.englishstudy.security.jwt.JwtAuthenticationFilter;
@@ -20,9 +23,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * Spring Security 설정.
- *
- * <p>JWT Filter / OAuth2 Login은 Bean으로 주입받되,
- * UserDetailsService 구현 전까지 Filter Chain 등록은 보류한다.</p>
  */
 @Configuration
 @EnableWebSecurity
@@ -31,8 +31,10 @@ public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
-    @SuppressWarnings("unused")
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,15 +51,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(SecurityConstants.PUBLIC_URLS).permitAll()
                         .anyRequest().authenticated()
-                );
-
-        // TODO: Google OAuth2 Login 연동
-        // http.oauth2Login(oauth2 -> oauth2
-        //         .successHandler(oAuth2LoginSuccessHandler)
-        //         .failureHandler(oAuth2LoginFailureHandler));
-
-        // TODO: UserDetailsService 구현 후 JWT Filter 등록
-        // http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

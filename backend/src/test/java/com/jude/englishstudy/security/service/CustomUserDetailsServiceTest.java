@@ -34,12 +34,53 @@ class CustomUserDetailsServiceTest {
     private CustomUserDetailsService customUserDetailsService;
 
     @Test
-    @DisplayName("email로 User와 StudyMember를 조회하여 CustomUserPrincipal을 반환한다")
+    @DisplayName("userId로 User와 StudyMember를 조회하여 CustomUserPrincipal을 반환한다")
+    void loadUserById() {
+        User user = mockUser(1L, "user@example.com", "jude");
+        StudyMember studyMember = mockStudyMember("ADMIN");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(studyMemberRepository.findByUserId(1L)).thenReturn(Optional.of(studyMember));
+
+        UserDetails userDetails = customUserDetailsService.loadUserById(1L);
+
+        assertThat(userDetails).isInstanceOf(CustomUserPrincipal.class);
+        CustomUserPrincipal principal = (CustomUserPrincipal) userDetails;
+        assertThat(principal.getUserId()).isEqualTo(1L);
+        assertThat(principal.getRole()).isEqualTo("ADMIN");
+    }
+
+    @Test
+    @DisplayName("userId로 User가 없으면 UsernameNotFoundException을 발생시킨다")
+    void loadUserByIdUserNotFound() {
+        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> customUserDetailsService.loadUserById(99L))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessageContaining("User not found");
+    }
+
+    @Test
+    @DisplayName("userId로 StudyMember가 없으면 UsernameNotFoundException을 발생시킨다")
+    void loadUserByIdStudyMemberNotFound() {
+        User user = mock(User.class);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(studyMemberRepository.findByUserId(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> customUserDetailsService.loadUserById(1L))
+                .isInstanceOf(UsernameNotFoundException.class)
+                .hasMessageContaining("Study member not found");
+    }
+
+    @Test
+    @DisplayName("loadUserByUsername은 email 조회 후 loadUserById를 사용한다")
     void loadUserByUsername() {
         User user = mockUser(1L, "user@example.com", "jude");
         StudyMember studyMember = mockStudyMember("ADMIN");
 
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(studyMemberRepository.findByUserId(1L)).thenReturn(Optional.of(studyMember));
 
         UserDetails userDetails = customUserDetailsService.loadUserByUsername("user@example.com");
@@ -70,6 +111,8 @@ class CustomUserDetailsServiceTest {
         when(user.getId()).thenReturn(1L);
 
         when(userRepository.findByEmail("user@example.com")).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(studyMemberRepository.findByUserId(1L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> customUserDetailsService.loadUserByUsername("user@example.com"))

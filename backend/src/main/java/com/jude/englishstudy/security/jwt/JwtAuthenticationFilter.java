@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -60,9 +59,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         Claims claims = jwtTokenProvider.getClaims(token);
         validateAccessTokenType(claims);
 
-        String email = claims.getSubject();
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-        CustomUserPrincipal principal = (CustomUserPrincipal) userDetails;
+        Long userId = jwtTokenProvider.getUserId(token);
+        CustomUserPrincipal principal = (CustomUserPrincipal) customUserDetailsService.loadUserById(userId);
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());

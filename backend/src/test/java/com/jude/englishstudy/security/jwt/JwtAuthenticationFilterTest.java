@@ -16,7 +16,6 @@ import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -92,12 +91,12 @@ class JwtAuthenticationFilterTest {
         MockFilterChain filterChain = new MockFilterChain();
 
         Claims claims = mock(Claims.class);
-        CustomUserPrincipal principal = createPrincipal("user@example.com");
+        CustomUserPrincipal principal = createPrincipal();
 
-        when(claims.getSubject()).thenReturn("user@example.com");
         when(claims.get(JwtConstants.CLAIM_TOKEN_TYPE, String.class)).thenReturn(TokenType.ACCESS.name());
         when(jwtTokenProvider.getClaims("valid.token")).thenReturn(claims);
-        when(customUserDetailsService.loadUserByUsername("user@example.com")).thenReturn(principal);
+        when(jwtTokenProvider.getUserId("valid.token")).thenReturn(1L);
+        when(customUserDetailsService.loadUserById(1L)).thenReturn(principal);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
@@ -121,16 +120,17 @@ class JwtAuthenticationFilterTest {
         MockFilterChain filterChain = new MockFilterChain();
 
         Claims claims = mock(Claims.class);
-        CustomUserPrincipal principal = createPrincipal("user@example.com");
+        CustomUserPrincipal principal = createPrincipal();
 
-        when(claims.getSubject()).thenReturn("user@example.com");
         when(claims.get(JwtConstants.CLAIM_TOKEN_TYPE, String.class)).thenReturn(TokenType.ACCESS.name());
         when(jwtTokenProvider.getClaims("valid.token")).thenReturn(claims);
-        when(customUserDetailsService.loadUserByUsername("user@example.com")).thenReturn(principal);
+        when(jwtTokenProvider.getUserId("valid.token")).thenReturn(1L);
+        when(customUserDetailsService.loadUserById(1L)).thenReturn(principal);
 
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         verify(jwtTokenProvider).getClaims("valid.token");
+        verify(jwtTokenProvider).getUserId("valid.token");
     }
 
     @Test
@@ -150,7 +150,7 @@ class JwtAuthenticationFilterTest {
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
-    private CustomUserPrincipal createPrincipal(String email) {
+    private CustomUserPrincipal createPrincipal() {
         CustomUserPrincipal principal = mock(CustomUserPrincipal.class);
         doReturn(List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))).when(principal).getAuthorities();
         return principal;

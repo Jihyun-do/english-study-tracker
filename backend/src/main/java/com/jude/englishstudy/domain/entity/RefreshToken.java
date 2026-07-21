@@ -42,4 +42,28 @@ public class RefreshToken {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public static RefreshToken create(
+            Long userId,
+            String refreshToken,
+            String deviceId,
+            String deviceName,
+            LocalDateTime expiresAt,
+            LocalDateTime now) {
+        RefreshToken token = new RefreshToken();
+        token.userId = userId;
+        token.refreshToken = refreshToken;
+        token.deviceId = deviceId;
+        token.deviceName = deviceName;
+        token.expiresAt = expiresAt;
+        token.lastAccessAt = now;
+        token.createdAt = now;
+        return token;
+    }
+
+    public void rotate(String refreshToken, LocalDateTime expiresAt, LocalDateTime lastAccessAt) {
+        this.refreshToken = refreshToken;
+        this.expiresAt = expiresAt;
+        this.lastAccessAt = lastAccessAt;
+    }
 }

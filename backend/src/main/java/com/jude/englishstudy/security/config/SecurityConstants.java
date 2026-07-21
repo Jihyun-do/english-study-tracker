@@ -12,7 +12,9 @@ public final class SecurityConstants {
             "/api/health",
             "/actuator/**",
             "/swagger-ui/**",
-            "/v3/api-docs/**"
+            "/v3/api-docs/**",
+            "/oauth2/**",
+            "/login/oauth2/**"
     };
 
     private SecurityConstants() {
